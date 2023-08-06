@@ -1,0 +1,40 @@
+{
+    "plugins": ["stylelint-order", "stylelint-z-index-value-constraint"],
+    "extends": [
+        "stylelint-config-recommended",
+        "stylelint-config-styled-components"
+    ],
+    "rules": {
+        "at-rule-no-unknown": [
+            true,
+            {
+                "ignoreAtRules": ["extends"]
+            }
+        ],
+        "color-named": "never",
+        "color-hex-length": "long",
+        "color-no-hex": null,
+        "font-family-name-quotes": "always-unless-keyword",
+        "number-leading-zero": "always",
+        "number-max-precision": 2,
+        "order/properties-alphabetical-order": true,
+        "plugin/z-index-value-constraint": {
+            "min": 1,
+            "max": 10
+        },
+        "shorthand-property-no-redundant-values": true,
+        "unit-allowed-list": ["px", "%", "s", "fr", "rem", "vw", "vh", "deg"],
+        "value-no-vendor-prefix": true,
+        "function-no-unknown": null
+    },
+    "overrides": [
+        {
+            "files": ["src/**/*.{ts,tsx}"],
+            "customSyntax": "@stylelint/postcss-css-in-js",
+            "rules": {
+                "at-rule-no-unknown": null
+            }
+        }
+    ],
+    "ignoreFiles": [".eslintrc.js", "vite.config.ts"]
+}
