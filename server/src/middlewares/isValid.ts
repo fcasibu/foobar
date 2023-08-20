@@ -1,4 +1,4 @@
-import { sendResponse } from '@/utils';
+import { sendResponse } from '../utils';
 import type { NextFunction, Request, Response } from 'express';
 import { ZodError, type AnyZodObject } from 'zod';
 
