@@ -1,11 +1,17 @@
 import { defineConfig } from 'tsup';
 
+const isDevelopment = process.env.NODE_ENV === 'development';
+
 export default defineConfig({
     entry: ['src/index.ts'],
-    splitting: false,
-    sourcemap: 'inline',
+    splitting: true,
     clean: true,
-    watch: ['src'],
-    ignoreWatch: ['src/**/*.d.ts'],
+    ...(isDevelopment
+        ? {
+              watch: ['src', '**/.env'],
+              ignoreWatch: ['src/**/*.d.ts'],
+              sourcemap: 'inline',
+          }
+        : { bundle: true }),
     minify: true,
 });
