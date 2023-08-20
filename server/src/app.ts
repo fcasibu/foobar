@@ -1,12 +1,12 @@
 import cors from 'cors';
 import express, { NextFunction, Request, Response } from 'express';
 import morgan from 'morgan';
-import { AppError, httpStatus } from '@/utils';
+import { AppError, httpStatus } from './utils';
 
 const app = express();
 
 app.use(cors());
-app.use(morgan('dev'));
+app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
@@ -20,7 +20,9 @@ app.use((err: AppError, _req: Request, res: Response, _next: NextFunction) => {
     res.status(err.statusCode || httpStatus.SERVER_ERROR).json({
         status: 'error',
         message: err.message,
-        ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
+        ...(process.env.NODE_ENV === 'development' && {
+            stack: err.stack,
+        }),
     });
 });
 

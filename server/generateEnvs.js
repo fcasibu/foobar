@@ -30,7 +30,9 @@ const envNames = env?.join(' | ');
 const template = `
 declare namespace NodeJS {
    interface ProcessEnv ${
-       envNames.length > 0 ? `extends Record<${envNames}, string> {}` : '{}'
+       envNames.length > 0
+           ? `extends Record<${envNames}, string> { NODE_ENV: 'production' | 'development' | 'test' }`
+           : "{ NODE_ENV: 'production' | 'development' | 'test' }"
    } 
 }
 `;
