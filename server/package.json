@@ -7,7 +7,7 @@
     "scripts": {
         "build": "tsc",
         "start": "NODE_ENV=production node ./dist/index.js",
-        "dev": "tsup --onSuccess \"node generateEnvs.js && NODE_ENV=development env $(cat .env | grep -v \"#\" | xargs) node ./dist/index.js\"",
+        "dev": "node generateEnvs.js && tsup --onSuccess \"NODE_ENV=development env $(cat .env | grep -v \"#\" | xargs) node ./dist/index.js\"",
         "format": "prettier src/**/*.ts --write",
         "lint": "eslint src/**/*.ts",
         "lint:fix": "npm run format && npm run lint -- --fix"
