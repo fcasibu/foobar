@@ -20,12 +20,18 @@ export const userSchema = z
             .min(8, {
                 message: 'Password must be at least 8 characters long.',
             }),
-        passwordConfirm: z.string(),
+        passwordConfirm: z.string().optional(),
     })
     .refine(({ password, passwordConfirm }) => password === passwordConfirm, {
         message: 'Passwords do not match.',
         path: ['passwordConfirm'],
     });
+
+type UserDocument = Document &
+    z.infer<typeof userSchema> & {
+        formattedDate: string;
+        validatePassword(password: string): Promise<boolean>;
+    };
 
 const UserSchema = new Schema({
     username: {
@@ -50,16 +56,22 @@ const UserSchema = new Schema({
     },
 });
 
+UserSchema.pre(
+    /(findOneAndUpdate|save)/i,
+    { document: true },
+    async function (next) {
+        if (!this.isModified('password')) return next();
+
+        this.password = await hash(this.password, 10);
+
+        delete this.passwordConfirm;
+        next();
+    },
+);
+
 UserSchema.methods.validatePassword = async function (password: string) {
     return await compare(password, this.password);
 };
-
-UserSchema.pre('save', async function (next) {
-    this.password = await hash(this.password, 10);
-
-    delete this.passwordConfirm;
-    next();
-});
 
 UserSchema.virtual('formattedDate').get(function () {
     return DateTime.fromJSDate(this.createdAt).toLocaleString(
@@ -73,4 +85,4 @@ UserSchema.virtual('rooms', {
     foreignField: 'user',
 });
 
-export const User = model('User', UserSchema);
+export const User = model<UserDocument>('User', UserSchema);
