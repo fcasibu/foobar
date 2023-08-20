@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const TYPES_PATH = 'src/global.d.ts';
+const TYPES_PATH = 'src/types/global.d.ts';
 
 const toAbsolute = (...paths) => path.resolve(__dirname, ...paths);
 
@@ -13,7 +13,7 @@ const env = fs
         try {
             const name = el.match(/.*(?==)/)?.[0];
 
-            if (/\s/g.test(name)) {
+            if (/\s/.test(name)) {
                 throw new Error(`${name} is not a valid environment variable`);
             }
 
