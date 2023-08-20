@@ -1,13 +1,13 @@
 const fs = require('fs');
 const path = require('path');
 
-const TYPES_PATH = 'src/types/global.d.ts';
+const TYPES_PATH = 'src/global.d.ts';
 
 const toAbsolute = (...paths) => path.resolve(__dirname, ...paths);
 
 const env = fs
     .readFileSync(toAbsolute('.env'), 'utf-8')
-    ?.replace(/^(#.*)$/g, '')
+    ?.replace(/(#.*)/g, '')
     .split('\n')
     .map((el) => {
         try {
