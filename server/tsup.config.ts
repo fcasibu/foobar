@@ -3,9 +3,9 @@ import { defineConfig } from 'tsup';
 export default defineConfig({
     entry: ['src/index.ts'],
     splitting: false,
-    sourcemap: false,
+    sourcemap: 'inline',
     clean: true,
-    watch: ['.env', 'src'],
+    watch: ['src'],
     ignoreWatch: ['src/**/*.d.ts'],
     minify: true,
 });
