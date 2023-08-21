@@ -38,9 +38,9 @@ export async function clearCollections() {
     const { collections } = mongoose.connection;
 
     await Promise.all(
-        Object.values(collections).map(async (collection) => {
-            await collection?.deleteMany();
-        }),
+        Object.values(collections).map(
+            (collection) => collection?.deleteMany(),
+        ),
     );
 }
 

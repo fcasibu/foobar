@@ -1,12 +1,23 @@
 import { NextFunction, Request, Response } from 'express';
 
-type Callback = (
+type Handler = (
     req: Request,
     res: Response,
     next: NextFunction,
-) => Promise<unknown>;
+) => Promise<Response>;
 
-export const handleAsync =
-    (callback: Callback): Callback =>
-    (req, res, next) =>
-        callback(req, res, next).catch(next);
+type Handlers<T> = {
+    [P in keyof T]: T[P];
+};
+
+export const handleAsync = <T extends Record<string, Handler>>(
+    handlers: Handlers<T>,
+): Handlers<T> => {
+    const entries = Object.entries(handlers).map(([key, callback]) => [
+        key,
+        (req: Request, res: Response, next: NextFunction) =>
+            callback(req, res, next).catch(next),
+    ]);
+
+    return Object.fromEntries(entries);
+};
