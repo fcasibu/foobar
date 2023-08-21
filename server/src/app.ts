@@ -1,6 +1,6 @@
 import cors from 'cors';
 import express, { NextFunction, Request, Response } from 'express';
-import { userRouter } from 'lib';
+import { roomRouter, userRouter } from 'lib';
 import morgan from 'morgan';
 import { AppError, httpStatus } from 'utils';
 
@@ -12,6 +12,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 app.use('/users', userRouter);
+app.use('/rooms', roomRouter);
 
 app.use((_req, _res, next) => {
     next(new AppError(httpStatus.NOT_FOUND, 'Not Found'));
