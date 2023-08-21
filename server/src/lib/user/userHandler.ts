@@ -1,4 +1,5 @@
 import { handleAsync, sendResponse, httpStatus, AppError } from 'utils';
+import { Types, isValidObjectId } from 'mongoose';
 import { UserService } from './userService';
 
 export function createUserHandler(userService: typeof UserService) {
@@ -10,22 +11,24 @@ export function createUserHandler(userService: typeof UserService) {
         },
 
         get: async (req, res) => {
-            if (!req.params.userId) {
-                throw new AppError(httpStatus.NOT_FOUND, 'Invalid user id');
+            if (!req.params.userId || !isValidObjectId(req.params.userId)) {
+                throw new AppError(httpStatus.BAD_REQUEST, 'Invalid user id');
             }
 
-            const user = await userService.getUser(req.params.userId);
+            const user = await userService.getUser(
+                new Types.ObjectId(req.params.userId),
+            );
 
             return sendResponse(res, httpStatus.SUCCESSFUL, { user });
         },
 
         update: async (req, res) => {
-            if (!req.params.userId) {
-                throw new AppError(httpStatus.NOT_FOUND, 'Invalid user id');
+            if (!req.params.userId || !isValidObjectId(req.params.userId)) {
+                throw new AppError(httpStatus.BAD_REQUEST, 'Invalid user id');
             }
 
             const user = await userService.updateUser(
-                req.params.userId,
+                new Types.ObjectId(req.params.userId),
                 req.body,
             );
 
@@ -33,13 +36,13 @@ export function createUserHandler(userService: typeof UserService) {
         },
 
         delete: async (req, res) => {
-            if (!req.params.userId) {
-                throw new AppError(httpStatus.NOT_FOUND, 'Invalid user id');
+            if (!req.params.userId || !isValidObjectId(req.params.userId)) {
+                throw new AppError(httpStatus.BAD_REQUEST, 'Invalid user id');
             }
 
-            await userService.deleteUser(req.params.userId);
+            await userService.deleteUser(new Types.ObjectId(req.params.userId));
 
-            return sendResponse(res, httpStatus.NO_CONTENT, {});
+            return sendResponse(res, httpStatus.NO_CONTENT);
         },
     });
 }
