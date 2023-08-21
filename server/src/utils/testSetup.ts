@@ -1,7 +1,7 @@
-import express, { Express, Router } from 'express';
+import express, { type Express, type Router } from 'express';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { MongoMemoryServer } from 'mongodb-memory-server';
-import { IncomingMessage, Server, ServerResponse } from 'http';
+import type { IncomingMessage, Server, ServerResponse } from 'http';
 import mongoose from 'mongoose';
 
 let connection: Server<typeof IncomingMessage, typeof ServerResponse> | null;
