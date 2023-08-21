@@ -1,10 +1,13 @@
 import z from 'zod';
+import type { Types } from 'mongoose';
 import { AppError, httpStatus } from 'utils';
 import { User, baseUserSchema } from './userModel';
 
 export class UserService {
-    public static async getUser(id: string) {
-        const user = await User.findById(id, '-password').exec();
+    public static async getUser(id: Types.ObjectId) {
+        const user = await User.findById(id, '-password')
+            .populate('rooms', '-members')
+            .exec();
 
         if (!user) {
             throw new AppError(
@@ -21,7 +24,7 @@ export class UserService {
     }
 
     public static async updateUser(
-        id: string,
+        id: Types.ObjectId,
         data: z.infer<typeof baseUserSchema>,
     ) {
         const user = await User.findById(id).exec();
@@ -40,7 +43,11 @@ export class UserService {
         return user;
     }
 
-    public static deleteUser(id: string) {
+    public static deleteUser(id: Types.ObjectId) {
         return User.findByIdAndUpdate(id, { isAccountDisabled: true }).exec();
+    }
+
+    public static hasUser(id: Types.ObjectId) {
+        return User.exists({ _id: id }).exec();
     }
 }
