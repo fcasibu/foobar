@@ -3,7 +3,7 @@ import { model, Schema } from 'mongoose';
 import { hash, compare } from 'bcryptjs';
 import z from 'zod';
 
-export const userSchema = z
+export const baseUserSchema = z
     .object({
         username: z
             .string()
@@ -22,58 +22,75 @@ export const userSchema = z
             }),
         passwordConfirm: z.string().optional(),
     })
-    .refine(({ password, passwordConfirm }) => password === passwordConfirm, {
+    .strict();
+
+export const refinedUserSchema = baseUserSchema.refine(
+    ({ password, passwordConfirm }) => password === passwordConfirm,
+    {
         message: 'Passwords do not match.',
         path: ['passwordConfirm'],
-    });
+    },
+);
 
 type UserDocument = Document &
-    z.infer<typeof userSchema> & {
+    z.infer<typeof refinedUserSchema> & {
         formattedDate: string;
+        isAccountDisabled: string;
         validatePassword(password: string): Promise<boolean>;
     };
 
-const UserSchema = new Schema({
-    username: {
-        type: String,
-        min: 4,
-        required: true,
-        lowercase: true,
+const UserSchema = new Schema(
+    {
+        username: {
+            type: String,
+            min: 4,
+            required: true,
+            lowercase: true,
+        },
+        displayName: {
+            type: String,
+            min: 1,
+        },
+        password: {
+            type: String,
+            min: 8,
+            required: true,
+        },
+        passwordConfirm: { type: String },
+        createdAt: {
+            type: Date,
+            default: Date.now,
+        },
+        isAccountDisabled: {
+            type: Boolean,
+            default: false,
+        },
     },
-    displayName: {
-        type: String,
-        min: 1,
-    },
-    password: {
-        type: String,
-        min: 8,
-        required: true,
-    },
-    passwordConfirm: { type: String },
-    createdAt: {
-        type: Date,
-        default: Date.now,
-    },
-});
+    { toJSON: { virtuals: true }, toObject: { virtuals: true } },
+);
 
 UserSchema.pre(
-    /(findOneAndUpdate|save)/i,
+    'save',
     { document: true },
-    async function (next) {
-        if (!this.isModified('password')) return next();
+    async function savePreMiddleware(next) {
+        if (!this.isModified('password')) {
+            next();
+            return;
+        }
 
         this.password = await hash(this.password, 10);
-
-        delete this.passwordConfirm;
+        this.passwordConfirm = undefined;
         next();
     },
 );
 
-UserSchema.methods.validatePassword = async function (password: string) {
-    return await compare(password, this.password);
+UserSchema.methods.validatePassword = function validatePassword(
+    password: string,
+) {
+    return compare(password, this.password);
 };
 
-UserSchema.virtual('formattedDate').get(function () {
+UserSchema.virtual('formattedDate').get(function getFormattedDate() {
     return DateTime.fromJSDate(this.createdAt).toLocaleString(
         DateTime.DATE_MED,
     );

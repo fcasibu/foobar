@@ -1,12 +1,12 @@
 import { NextFunction, Request, Response } from 'express';
 
+type Callback = (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => Promise<unknown>;
+
 export const handleAsync =
-    (
-        callback: (
-            req: Request,
-            res: Response,
-            next: NextFunction,
-        ) => Promise<unknown>,
-    ) =>
-    (req: Request, res: Response, next: NextFunction) =>
+    (callback: Callback): Callback =>
+    (req, res, next) =>
         callback(req, res, next).catch(next);
