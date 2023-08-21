@@ -20,6 +20,7 @@ export function createHandler(
 
             const room = await roomService.getRoom(
                 new Types.ObjectId(req.params.roomId),
+                Number(req.query.page ?? 1),
             );
             return sendResponse(res, httpStatus.SUCCESSFUL, { room });
         },

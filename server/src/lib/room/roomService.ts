@@ -1,17 +1,27 @@
 import z from 'zod';
 import { Types } from 'mongoose';
-import { AppError, httpStatus } from 'utils';
+import { AppError, httpStatus, paginate } from 'utils';
 import type { UserService } from 'lib/user';
 import { Room, roomSchema } from './roomModel';
 
 export class RoomService {
+    private static readonly MEMBER_LIMIT = 50;
+
     public static getAllRoom() {
         return Room.find({}, 'name').exec();
     }
 
-    public static async getRoom(id: Types.ObjectId) {
+    public static async getRoom(id: Types.ObjectId, pageNumber: number) {
         const room = await Room.findById(id)
-            .populate('members', '-password')
+            .populate({
+                path: 'members',
+                options: {
+                    skip: paginate(pageNumber, RoomService.MEMBER_LIMIT),
+                    limit: RoomService.MEMBER_LIMIT,
+                    projection: '-password',
+                    sort: 'displayName username',
+                },
+            })
             .exec();
 
         if (!room) {
@@ -71,7 +81,14 @@ export class RoomService {
             },
             { new: true },
         )
-            .populate('members', '-password')
+            .populate({
+                path: 'members',
+                options: {
+                    limit: RoomService.MEMBER_LIMIT,
+                    projection: '-password',
+                    sort: 'displayName username',
+                },
+            })
             .exec();
 
         return room;
