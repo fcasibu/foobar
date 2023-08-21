@@ -53,7 +53,7 @@ describe('user', () => {
         expect(result.body.user.passwordConfirm).toBeUndefined();
     });
 
-    test('PUT /users/:userId', async () => {
+    test('PATCH /users/:userId', async () => {
         const user = await User.create(mockUser);
 
         const result = await request(app).get(`/users/${user.id}`);
