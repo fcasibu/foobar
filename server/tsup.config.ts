@@ -7,7 +7,7 @@ export default defineConfig({
     clean: true,
     ...(isDevelopment
         ? {
-              watch: ['src', '**/.env'],
+              watch: ['src'],
               ignoreWatch: ['src/**/*.d.ts'],
               sourcemap: true,
           }

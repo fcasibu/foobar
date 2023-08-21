@@ -11,7 +11,7 @@ app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-app.use('/api/users', userRouter);
+app.use('/users', userRouter);
 
 app.use((_req, _res, next) => {
     next(new AppError(httpStatus.NOT_FOUND, 'Not Found'));
@@ -22,7 +22,7 @@ app.use((err: AppError, _req: Request, res: Response, _next: NextFunction) => {
     console.error(err.message);
 
     res.status(err.statusCode || httpStatus.SERVER_ERROR).json({
-        status: 'error',
+        status: 'fail',
         message: err.message,
         ...(process.env.NODE_ENV === 'development' && {
             stack: err.stack,

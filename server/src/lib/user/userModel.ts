@@ -7,16 +7,18 @@ export const baseUserSchema = z
     .object({
         username: z
             .string()
-            .nonempty({ message: 'Username is required.' })
-            .min(4, { message: 'Username must be 4 characters long.' })
+            .nonempty({ message: 'Username must not be empty.' })
+            .min(4, { message: 'Username must be at least 4 characters long.' })
             .toLowerCase(),
         displayName: z
             .string()
-            .min(1, { message: 'Display Name must have at least 1 character.' })
-            .nullish(),
+            .min(1, {
+                message: 'Display Name must be at least 1 character long.',
+            })
+            .optional(),
         password: z
             .string()
-            .nonempty({ message: 'Password is required.' })
+            .nonempty({ message: 'Password must not be empty.' })
             .min(8, {
                 message: 'Password must be at least 8 characters long.',
             }),
@@ -35,7 +37,6 @@ export const refinedUserSchema = baseUserSchema.refine(
 type UserDocument = Document &
     z.infer<typeof refinedUserSchema> & {
         formattedDate: string;
-        isAccountDisabled: string;
         validatePassword(password: string): Promise<boolean>;
     };
 
@@ -61,28 +62,21 @@ const UserSchema = new Schema(
             type: Date,
             default: Date.now,
         },
-        isAccountDisabled: {
-            type: Boolean,
-            default: false,
-        },
+        isAccountDisabled: { type: Boolean, default: false },
     },
     { toJSON: { virtuals: true }, toObject: { virtuals: true } },
 );
 
-UserSchema.pre(
-    'save',
-    { document: true },
-    async function savePreMiddleware(next) {
-        if (!this.isModified('password')) {
-            next();
-            return;
-        }
-
-        this.password = await hash(this.password, 10);
-        this.passwordConfirm = undefined;
+UserSchema.pre('save', { document: true }, async function savePreHook(next) {
+    if (!this.isModified('password')) {
         next();
-    },
-);
+        return;
+    }
+
+    this.password = await hash(this.password, 10);
+    this.passwordConfirm = undefined;
+    next();
+});
 
 UserSchema.methods.validatePassword = function validatePassword(
     password: string,
@@ -90,16 +84,16 @@ UserSchema.methods.validatePassword = function validatePassword(
     return compare(password, this.password);
 };
 
+UserSchema.virtual('rooms', {
+    ref: 'Room',
+    localField: '_id',
+    foreignField: 'members',
+});
+
 UserSchema.virtual('formattedDate').get(function getFormattedDate() {
     return DateTime.fromJSDate(this.createdAt).toLocaleString(
         DateTime.DATE_MED,
     );
-});
-
-UserSchema.virtual('rooms', {
-    ref: 'Room',
-    localField: '_id',
-    foreignField: 'user',
 });
 
 export const User = model<UserDocument>('User', UserSchema);

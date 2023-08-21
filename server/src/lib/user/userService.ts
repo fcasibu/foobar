@@ -1,6 +1,6 @@
 import z from 'zod';
 import { AppError, httpStatus } from 'utils';
-import { User, refinedUserSchema } from './userModel';
+import { User, baseUserSchema } from './userModel';
 
 export class UserService {
     public static async getUser(id: string) {
@@ -22,7 +22,7 @@ export class UserService {
 
     public static async updateUser(
         id: string,
-        data: z.infer<typeof refinedUserSchema>,
+        data: z.infer<typeof baseUserSchema>,
     ) {
         const user = await User.findById(id).exec();
 
@@ -41,6 +41,6 @@ export class UserService {
     }
 
     public static deleteUser(id: string) {
-        return User.findByIdAndDelete(id).exec();
+        return User.findByIdAndUpdate(id, { isAccountDisabled: true }).exec();
     }
 }

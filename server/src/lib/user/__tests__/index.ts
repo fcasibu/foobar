@@ -1,11 +1,23 @@
 import request from 'supertest';
 import { Express } from 'express';
 import { faker } from '@faker-js/faker';
-import { initializeTestServer, closeTestServer, clearCollections } from 'utils';
+import {
+    initializeTestServer,
+    closeTestServer,
+    clearCollections,
+    httpStatus,
+} from 'utils';
 import { userRouter } from '../userRoute';
 import { User } from '../userModel';
 
 let app: Express;
+
+const password = faker.internet.password();
+const mockUser = {
+    username: faker.internet.userName(),
+    password,
+    passwordConfirm: password,
+};
 
 beforeAll(async () => {
     app = await initializeTestServer('/users', userRouter);
@@ -21,32 +33,20 @@ afterEach(() => {
 
 describe('user', () => {
     test('GET /users', async () => {
-        const password = faker.internet.password();
-        const mockUser = {
-            username: faker.internet.userName(),
-            password,
-            passwordConfirm: password,
-        };
         await User.create(mockUser);
 
         const result = await request(app).get(`/users`);
 
-        expect(result.statusCode).toBe(200);
+        expect(result.statusCode).toBe(httpStatus.SUCCESSFUL);
         expect(result.body.users).toHaveLength(1);
     });
 
     test('GET /users/:userId', async () => {
-        const password = faker.internet.password();
-        const mockUser = {
-            username: faker.internet.userName(),
-            password,
-            passwordConfirm: password,
-        };
         const user = await User.create(mockUser);
 
         const result = await request(app).get(`/users/${user.id}`);
 
-        expect(result.statusCode).toBe(200);
+        expect(result.statusCode).toBe(httpStatus.SUCCESSFUL);
         expect(result.body.user.id).toBe(user.id);
         expect(result.body.user.username).toBe(user.username);
         expect(result.body.user.password).toBeUndefined();
@@ -54,17 +54,11 @@ describe('user', () => {
     });
 
     test('PUT /users/:userId', async () => {
-        const password = faker.internet.password();
-        const mockUser = {
-            username: faker.internet.userName(),
-            password,
-            passwordConfirm: password,
-        };
         const user = await User.create(mockUser);
 
         const result = await request(app).get(`/users/${user.id}`);
 
-        expect(result.statusCode).toBe(200);
+        expect(result.statusCode).toBe(httpStatus.SUCCESSFUL);
         expect(result.body.user.id).toBe(user.id);
         expect(result.body.user.username).toBe(user.username);
         expect(result.body.user.displayName).toBeUndefined();
@@ -77,25 +71,21 @@ describe('user', () => {
             .patch(`/users/${user.id}`)
             .send(newData);
 
+        expect(newResult.statusCode).toBe(httpStatus.SUCCESSFUL);
+        expect(newResult.body.user.displayName).not.toBeUndefined();
         expect(newResult.body.user.displayName).toBe(newData.displayName);
     });
 
     test('DELETE /users/:userId', async () => {
-        const password = faker.internet.password();
-        const mockUser = {
-            username: faker.internet.userName(),
-            password,
-            passwordConfirm: password,
-        };
         const user = await User.create(mockUser);
 
         const result = await request(app).delete(`/users/${user.id}`);
 
-        expect(result.statusCode).toBe(200);
+        expect(result.statusCode).toBe(httpStatus.NO_CONTENT);
 
-        const newResult = await request(app).get('/users');
+        const newResult = await request(app).get(`/users/${user.id}`);
 
-        expect(newResult.statusCode).toBe(200);
-        expect(newResult.body.users).toHaveLength(0);
+        expect(newResult.statusCode).toBe(httpStatus.SUCCESSFUL);
+        expect(newResult.body.user.isAccountDisabled).toBeTruthy();
     });
 });
