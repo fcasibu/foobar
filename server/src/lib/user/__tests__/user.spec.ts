@@ -20,6 +20,7 @@ const mockUser = {
 };
 
 beforeAll(async () => {
+    import('lib/room/roomModel');
     app = await initializeTestServer('/users', userRouter);
 });
 

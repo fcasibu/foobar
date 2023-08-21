@@ -18,19 +18,17 @@ export function createHandler(
                 throw new AppError(httpStatus.NOT_FOUND, 'Invalid room id');
             }
 
-            const room = await roomService.getRoom(
-                new Types.ObjectId(req.params.roomId),
-                Number(req.query.page ?? 1),
-            );
+            const roomId = new Types.ObjectId(req.params.roomId);
+            const pageNumber = Number(req.query.page ?? 1);
+            const room = await roomService.getRoom(roomId, pageNumber);
+
             return sendResponse(res, httpStatus.SUCCESSFUL, { room });
         },
 
         post: async (req, res) => {
             const { name, owner } = req.body;
-            const room = await roomService.createRoom(
-                name,
-                new Types.ObjectId(owner),
-            );
+            const ownerId = new Types.ObjectId(owner);
+            const room = await roomService.createRoom(name, ownerId);
 
             return sendResponse(res, httpStatus.CREATED, { room });
         },
@@ -40,10 +38,8 @@ export function createHandler(
                 throw new AppError(httpStatus.BAD_REQUEST, 'Invalid room id');
             }
 
-            const room = await roomService.updateRoom(
-                new Types.ObjectId(req.params.roomId),
-                req.body,
-            );
+            const roomId = new Types.ObjectId(req.params.roomId);
+            const room = await roomService.updateRoom(roomId, req.body);
 
             return sendResponse(res, httpStatus.SUCCESSFUL, { room });
         },
@@ -53,7 +49,8 @@ export function createHandler(
                 throw new AppError(httpStatus.BAD_REQUEST, 'Invalid room id');
             }
 
-            await roomService.deleteRoom(new Types.ObjectId(req.params.roomId));
+            const roomId = new Types.ObjectId(req.params.roomId);
+            await roomService.deleteRoom(roomId);
 
             return sendResponse(res, httpStatus.NO_CONTENT);
         },
@@ -63,11 +60,10 @@ export function createHandler(
                 throw new AppError(httpStatus.BAD_REQUEST, 'Invalid room id');
             }
 
+            const roomId = new Types.ObjectId(req.params.roomId);
+            const userId = new Types.ObjectId(req.body.userId);
             const room = await roomService.joinRoom(
-                {
-                    roomId: new Types.ObjectId(req.params.roomId),
-                    userId: new Types.ObjectId(req.body.userId),
-                },
+                { roomId, userId },
                 userService,
             );
 

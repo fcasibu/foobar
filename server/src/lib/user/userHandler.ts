@@ -15,9 +15,8 @@ export function createUserHandler(userService: typeof UserService) {
                 throw new AppError(httpStatus.BAD_REQUEST, 'Invalid user id');
             }
 
-            const user = await userService.getUser(
-                new Types.ObjectId(req.params.userId),
-            );
+            const userId = new Types.ObjectId(req.params.userId);
+            const user = await userService.getUser(userId);
 
             return sendResponse(res, httpStatus.SUCCESSFUL, { user });
         },
@@ -27,10 +26,8 @@ export function createUserHandler(userService: typeof UserService) {
                 throw new AppError(httpStatus.BAD_REQUEST, 'Invalid user id');
             }
 
-            const user = await userService.updateUser(
-                new Types.ObjectId(req.params.userId),
-                req.body,
-            );
+            const userId = new Types.ObjectId(req.params.userId);
+            const user = await userService.updateUser(userId, req.body);
 
             return sendResponse(res, httpStatus.SUCCESSFUL, { user });
         },
@@ -40,7 +37,8 @@ export function createUserHandler(userService: typeof UserService) {
                 throw new AppError(httpStatus.BAD_REQUEST, 'Invalid user id');
             }
 
-            await userService.deleteUser(new Types.ObjectId(req.params.userId));
+            const userId = new Types.ObjectId(req.params.userId);
+            await userService.deleteUser(userId);
 
             return sendResponse(res, httpStatus.NO_CONTENT);
         },
