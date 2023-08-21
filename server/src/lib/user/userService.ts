@@ -1,12 +1,10 @@
-import { AppError, httpStatus } from 'utils';
-import { User, userSchema } from '.';
 import z from 'zod';
+import { AppError, httpStatus } from 'utils';
+import { User, refinedUserSchema } from './userModel';
 
 export class UserService {
     public static async getUser(id: string) {
-        const user = await User.findById(id, '-password')
-            .populate('rooms')
-            .exec();
+        const user = await User.findById(id, '-password').exec();
 
         if (!user) {
             throw new AppError(
@@ -18,18 +16,31 @@ export class UserService {
         return user;
     }
 
-    public static async getAllUser() {
+    public static getAllUser() {
         return User.find({}, '-password').exec();
     }
 
     public static async updateUser(
         id: string,
-        data: z.infer<typeof userSchema>,
+        data: z.infer<typeof refinedUserSchema>,
     ) {
-        return User.findByIdAndUpdate(id, data, { new: true }).exec();
+        const user = await User.findById(id).exec();
+
+        if (!user) {
+            throw new AppError(
+                httpStatus.NOT_FOUND,
+                `User with the id ${id} was not found.`,
+            );
+        }
+
+        Object.assign(user, data);
+        await user.save();
+        user.password = undefined!;
+
+        return user;
     }
 
-    public static async deleteUser(id: string) {
+    public static deleteUser(id: string) {
         return User.findByIdAndDelete(id).exec();
     }
 }
