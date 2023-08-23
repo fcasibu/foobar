@@ -3,11 +3,11 @@ import { isValidObjectId } from 'mongoose';
 import { Router } from 'express';
 import { isValid } from 'middlewares';
 import { UserService } from 'lib/user';
-import { createHandler } from './roomHandler';
+import { createRoomHandler } from './roomHandler';
 import { RoomService } from './roomService';
 import { roomSchema } from './roomModel';
 
-const handler = createHandler(RoomService, UserService);
+const handler = createRoomHandler(RoomService, UserService);
 export const roomRouter = Router();
 
 roomRouter

@@ -3,7 +3,7 @@ import { AppError, handleAsync, httpStatus, sendResponse } from 'utils';
 import type { UserService } from 'lib/user';
 import type { RoomService } from './roomService';
 
-export function createHandler(
+export function createRoomHandler(
     roomService: typeof RoomService,
     userService: typeof UserService,
 ) {

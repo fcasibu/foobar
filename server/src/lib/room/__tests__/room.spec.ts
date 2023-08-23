@@ -26,8 +26,8 @@ afterAll(async () => {
     await closeTestServer();
 });
 
-afterEach(() => {
-    clearCollections();
+afterEach(async () => {
+    await clearCollections();
 });
 
 describe('room', () => {
@@ -83,7 +83,7 @@ describe('room', () => {
 
         expect(newResult.statusCode).toBe(httpStatus.NO_CONTENT);
 
-        const result = await request(app).get(`/rooms`);
+        const result = await request(app).get('/rooms');
 
         expect(result.statusCode).toBe(httpStatus.SUCCESSFUL);
         expect(result.body.rooms).toHaveLength(0);
