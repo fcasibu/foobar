@@ -4,8 +4,9 @@ import { UserService } from './userService';
 
 export function createUserHandler(userService: typeof UserService) {
     return handleAsync({
-        getAll: async (_req, res) => {
-            const users = await userService.getAllUser();
+        getAll: async (req, res) => {
+            const pageNumber = Number(req.query.page);
+            const users = await userService.getAllUser(pageNumber);
 
             return sendResponse(res, httpStatus.SUCCESSFUL, { users });
         },
@@ -16,7 +17,7 @@ export function createUserHandler(userService: typeof UserService) {
             }
 
             const userId = new Types.ObjectId(req.params.userId);
-            const user = await userService.getUser(userId);
+            const user = await userService.getUser({ _id: userId });
 
             return sendResponse(res, httpStatus.SUCCESSFUL, { user });
         },
@@ -27,7 +28,10 @@ export function createUserHandler(userService: typeof UserService) {
             }
 
             const userId = new Types.ObjectId(req.params.userId);
-            const user = await userService.updateUser(userId, req.body);
+            const user = await userService.updateUser(
+                { _id: userId },
+                req.body,
+            );
 
             return sendResponse(res, httpStatus.SUCCESSFUL, { user });
         },
@@ -38,7 +42,7 @@ export function createUserHandler(userService: typeof UserService) {
             }
 
             const userId = new Types.ObjectId(req.params.userId);
-            await userService.deleteUser(userId);
+            await userService.deleteUser({ _id: userId });
 
             return sendResponse(res, httpStatus.NO_CONTENT);
         },
