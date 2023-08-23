@@ -1,4 +1,5 @@
-import express, { type Express, type Router } from 'express';
+import type { Express, Router } from 'express';
+import express from 'express';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import type { IncomingMessage, Server, ServerResponse } from 'http';
@@ -12,7 +13,7 @@ async function initializeMongoServer() {
         mongoServer = await MongoMemoryServer.create();
         mongoose.connect(mongoServer.getUri());
     } catch (e) {
-        console.error(`Unable to connect to mongo server.`, e);
+        console.error('Unable to connect to mongo server.', e);
     }
 }
 
