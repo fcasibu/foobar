@@ -1,12 +1,20 @@
 import ReactDOM from 'react-dom/client';
-import App from './App.tsx';
 import { GlobalStyle } from './reset.ts';
-import { BrowserRouter } from 'react-router-dom';
+import { StrictMode } from 'react';
+import App from '@App.tsx';
+import { QueryClientProvider } from 'react-query';
+import { ReactQueryDevtools } from 'react-query/devtools';
+import { AuthProvider } from '@features/auth/context/AuthProvider.tsx';
+import { client } from './lib/queryClient';
 
-ReactDOM.hydrateRoot(
-    document.getElementById('root')!,
-    <BrowserRouter>
+ReactDOM.createRoot(document.getElementById('root')!).render(
+    <StrictMode>
         <GlobalStyle />
-        <App />
-    </BrowserRouter>,
+        <QueryClientProvider client={client}>
+            {import.meta.env.DEV && <ReactQueryDevtools />}
+            <AuthProvider>
+                <App />
+            </AuthProvider>
+        </QueryClientProvider>
+    </StrictMode>,
 );

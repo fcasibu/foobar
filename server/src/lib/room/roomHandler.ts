@@ -8,13 +8,14 @@ export function createRoomHandler(
     userService: typeof UserService,
 ) {
     return handleAsync({
-        getAll: async (_req, res) => {
-            const rooms = await roomService.getAllRoom();
+        getAll: async (req, res) => {
+            const pageNumber = Number(req.query.page ?? 1);
+            const rooms = await roomService.getAllRoom(pageNumber);
             return sendResponse(res, httpStatus.SUCCESSFUL, { rooms });
         },
 
         get: async (req, res) => {
-            if (!req.params.roomId || !isValidObjectId(req.params.roomId)) {
+            if (!isValidObjectId(req.params.roomId)) {
                 throw new AppError(httpStatus.NOT_FOUND, 'Invalid room id');
             }
 
@@ -34,7 +35,7 @@ export function createRoomHandler(
         },
 
         update: async (req, res) => {
-            if (!req.params.roomId || !isValidObjectId(req.params.roomId)) {
+            if (!isValidObjectId(req.params.roomId)) {
                 throw new AppError(httpStatus.BAD_REQUEST, 'Invalid room id');
             }
 
@@ -45,7 +46,7 @@ export function createRoomHandler(
         },
 
         delete: async (req, res) => {
-            if (!req.params.roomId || !isValidObjectId(req.params.roomId)) {
+            if (!isValidObjectId(req.params.roomId)) {
                 throw new AppError(httpStatus.BAD_REQUEST, 'Invalid room id');
             }
 
@@ -56,7 +57,7 @@ export function createRoomHandler(
         },
 
         join: async (req, res) => {
-            if (!req.params.roomId || !isValidObjectId(req.params.roomId)) {
+            if (!isValidObjectId(req.params.roomId)) {
                 throw new AppError(httpStatus.BAD_REQUEST, 'Invalid room id');
             }
 

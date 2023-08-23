@@ -7,8 +7,10 @@ const reactPlugin =
         ? react({
               babel: {
                   plugins: [
-                      'babel-plugin-styled-components',
-                      [{ displayName: true, fileName: true }],
+                      [
+                          'babel-plugin-styled-components',
+                          { displayName: true, fileName: true },
+                      ],
                   ],
               },
           })

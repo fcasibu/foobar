@@ -2,22 +2,33 @@ import type { NextFunction, Request, Response } from 'express';
 import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
-import { User, authRouter, roomRouter, userRouter } from 'lib';
+import session from 'express-session';
+import passport from 'passport';
+import { User, authRouter, roomRouter, userRouter, messageRouter } from 'lib';
 import { PassportService } from 'services';
 import { AppError, httpStatus } from 'utils';
 
 const app = express();
 
-app.use(cors());
+app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
 app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use(
+    session({
+        secret: process.env.SESSION_SECRET,
+        saveUninitialized: false,
+        resave: false,
+    }),
+);
+app.use(passport.initialize());
+app.use(passport.session());
 
 const passportService = new PassportService(User);
 passportService.init();
 
 app.use('/users', userRouter);
-app.use('/rooms', roomRouter);
+app.use('/rooms', roomRouter, messageRouter);
 app.use('/auth', authRouter);
 
 app.use((_req, _res, next) => {

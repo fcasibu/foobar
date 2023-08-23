@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { isValidObjectId } from 'mongoose';
 import { Router } from 'express';
-import { isValid } from 'middlewares';
+import { isAuthenticated, isValid } from 'middlewares';
 import { UserService } from 'lib/user';
 import { createRoomHandler } from './roomHandler';
 import { RoomService } from './roomService';
@@ -14,6 +14,8 @@ roomRouter
     .route('/')
     .get(handler.getAll)
     .post(isValid(roomSchema), handler.post);
+
+roomRouter.use(isAuthenticated);
 
 roomRouter
     .route('/:roomId')

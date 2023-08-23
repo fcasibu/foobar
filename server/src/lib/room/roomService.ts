@@ -2,13 +2,16 @@ import z from 'zod';
 import { Types } from 'mongoose';
 import { AppError, httpStatus, paginate } from 'utils';
 import type { UserService } from 'lib/user';
-import { Room, roomSchema } from './roomModel';
+import { Room, type roomSchema } from './roomModel';
 
 export class RoomService {
     private static readonly DATA_LIMIT = 50;
 
-    public static getAllRoom() {
-        return Room.find({}, 'name').exec();
+    public static getAllRoom(pageNumber: number) {
+        return Room.find({}, 'name')
+            .skip(paginate(pageNumber, RoomService.DATA_LIMIT))
+            .limit(RoomService.DATA_LIMIT)
+            .exec();
     }
 
     public static async getRoom(id: Types.ObjectId, pageNumber: number) {
@@ -18,8 +21,7 @@ export class RoomService {
                 options: {
                     skip: paginate(pageNumber, RoomService.DATA_LIMIT),
                     limit: RoomService.DATA_LIMIT,
-                    projection: '-password',
-                    sort: 'displayName username',
+                    sort: 'displayName',
                 },
             })
             .exec();
@@ -57,14 +59,27 @@ export class RoomService {
         return room;
     }
 
-    public static deleteRoom(id: Types.ObjectId) {
-        return Room.findByIdAndDelete(id);
+    public static async deleteRoom(id: Types.ObjectId) {
+        const room = await Room.findOne({ _id: id }).exec();
+        return room?.deleteOne();
     }
 
     public static async joinRoom(
         { roomId, userId }: Record<'roomId' | 'userId', Types.ObjectId>,
         userService: typeof UserService,
     ) {
+        const isUserAlreadyInRoom = await Room.exists({
+            _id: roomId,
+            members: { _id: userId },
+        });
+
+        if (isUserAlreadyInRoom) {
+            throw new AppError(
+                httpStatus.BAD_REQUEST,
+                `User already a member.`,
+            );
+        }
+
         const hasUser = await userService.hasUser({ _id: userId });
 
         if (!hasUser) {
@@ -74,10 +89,10 @@ export class RoomService {
             );
         }
 
-        const room = await Room.findByIdAndUpdate(
-            roomId,
+        const room = await Room.findOneAndUpdate(
+            { _id: roomId },
             {
-                $push: { members: userId },
+                $addToSet: { members: userId },
             },
             { new: true },
         )
@@ -85,8 +100,7 @@ export class RoomService {
                 path: 'members',
                 options: {
                     limit: RoomService.DATA_LIMIT,
-                    projection: '-password',
-                    sort: 'displayName username',
+                    sort: 'displayName',
                 },
             })
             .exec();

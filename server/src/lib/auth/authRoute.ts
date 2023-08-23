@@ -1,18 +1,21 @@
 import { Router } from 'express';
 import passport from 'passport';
-import { UserService, refinedUserSchema } from 'lib/user';
-import { isValid } from 'middlewares';
 import { createAuthHandler } from './authHandler';
-import { AuthService } from './authService';
 
-const handler = createAuthHandler(UserService, AuthService);
+const handler = createAuthHandler();
 export const authRouter = Router();
 
-authRouter.route('/login').post(handler.loginWithUsernameAndPassword);
+authRouter.route('/github').get(
+    passport.authenticate('github', {
+        scope: ['user:email'],
+    }),
+);
 
 authRouter
-    .route('/register')
-    .post(isValid(refinedUserSchema), handler.registerWithUsernameAndPassword);
+    .route('/github/callback')
+    .get(passport.authenticate('github', { session: true }), (_req, res) => {
+        res.redirect(process.env.CLIENT_URL);
+    });
 
 authRouter.route('/google').get(
     passport.authenticate('google', {
@@ -20,8 +23,10 @@ authRouter.route('/google').get(
     }),
 );
 
-authRouter.route('/google/callback').get(
-    passport.authenticate('google', {
-        successRedirect: '/',
-    }),
-);
+authRouter
+    .route('/google/callback')
+    .get(passport.authenticate('google', { session: true }), (_req, res) => {
+        res.redirect(process.env.CLIENT_URL);
+    });
+
+authRouter.route('/me').get(handler.getMe);

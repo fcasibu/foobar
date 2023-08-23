@@ -1,5 +1,5 @@
 import request from 'supertest';
-import { Express } from 'express';
+import { Express, NextFunction, Request, Response } from 'express';
 import { faker } from '@faker-js/faker';
 import {
     clearCollections,
@@ -17,6 +17,12 @@ const mockRoom = {
     name: faker.internet.domainWord(),
     owner: faker.database.mongodbObjectId(),
 };
+
+jest.mock('../../../middlewares', () => ({
+    ...jest.requireActual('../../../middlewares'),
+    isAuthenticated: (_req: Request, _res: Response, next: NextFunction) =>
+        next(),
+}));
 
 beforeAll(async () => {
     app = await initializeTestServer('/rooms', roomRouter);
@@ -79,14 +85,14 @@ describe('room', () => {
     test('DELETE /rooms/:roomId', async () => {
         const room = await Room.create(mockRoom);
 
-        const newResult = await request(app).delete(`/rooms/${room.id}`);
+        const result = await request(app).delete(`/rooms/${room.id}`);
 
-        expect(newResult.statusCode).toBe(httpStatus.NO_CONTENT);
+        expect(result.statusCode).toBe(httpStatus.NO_CONTENT);
 
-        const result = await request(app).get('/rooms');
+        const newResult = await request(app).get('/rooms');
 
-        expect(result.statusCode).toBe(httpStatus.SUCCESSFUL);
-        expect(result.body.rooms).toHaveLength(0);
+        expect(newResult.statusCode).toBe(httpStatus.SUCCESSFUL);
+        expect(newResult.body.rooms).toHaveLength(0);
     });
 
     test('PATCH /rooms/:roomId/join', async () => {
@@ -98,11 +104,8 @@ describe('room', () => {
         expect(result.body.room).toBeDefined();
         expect(result.body.room.members).toHaveLength(0);
 
-        const password = faker.internet.password();
         const mockUser = {
-            username: faker.internet.userName(),
-            password,
-            passwordConfirm: password,
+            displayName: faker.internet.displayName(),
         };
         const user = await User.create(mockUser);
 

@@ -1,5 +1,5 @@
 import request from 'supertest';
-import { Express } from 'express';
+import { Express, NextFunction } from 'express';
 import { faker } from '@faker-js/faker';
 import {
     initializeTestServer,
@@ -12,12 +12,15 @@ import { User } from '../userModel';
 
 let app: Express;
 
-const password = faker.internet.password();
 const mockUser = {
-    username: faker.internet.userName(),
-    password,
-    passwordConfirm: password,
+    displayName: faker.internet.displayName(),
 };
+
+jest.mock('../../../middlewares', () => ({
+    ...jest.requireActual('../../../middlewares'),
+    isAuthenticated: (_req: Request, _res: Response, next: NextFunction) =>
+        next(),
+}));
 
 beforeAll(async () => {
     import('lib/room/roomModel');
@@ -49,32 +52,7 @@ describe('user', () => {
 
         expect(result.statusCode).toBe(httpStatus.SUCCESSFUL);
         expect(result.body.user.id).toBe(user.id);
-        expect(result.body.user.username).toBe(user.username);
-        expect(result.body.user.password).toBeUndefined();
-        expect(result.body.user.passwordConfirm).toBeUndefined();
-    });
-
-    test('PATCH /users/:userId', async () => {
-        const user = await User.create(mockUser);
-
-        const result = await request(app).get(`/users/${user.id}`);
-
-        expect(result.statusCode).toBe(httpStatus.SUCCESSFUL);
-        expect(result.body.user.id).toBe(user.id);
-        expect(result.body.user.username).toBe(user.username);
-        expect(result.body.user.displayName).toBeUndefined();
-
-        const newData = {
-            displayName: faker.internet.displayName(),
-        };
-
-        const newResult = await request(app)
-            .patch(`/users/${user.id}`)
-            .send(newData);
-
-        expect(newResult.statusCode).toBe(httpStatus.SUCCESSFUL);
-        expect(newResult.body.user.displayName).not.toBeUndefined();
-        expect(newResult.body.user.displayName).toBe(newData.displayName);
+        expect(result.body.user.displayName).toBe(user.displayName);
     });
 
     test('DELETE /users/:userId', async () => {

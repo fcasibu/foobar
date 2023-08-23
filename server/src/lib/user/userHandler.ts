@@ -12,7 +12,7 @@ export function createUserHandler(userService: typeof UserService) {
         },
 
         get: async (req, res) => {
-            if (!req.params.userId || !isValidObjectId(req.params.userId)) {
+            if (!isValidObjectId(req.params.userId)) {
                 throw new AppError(httpStatus.BAD_REQUEST, 'Invalid user id');
             }
 
@@ -23,7 +23,7 @@ export function createUserHandler(userService: typeof UserService) {
         },
 
         update: async (req, res) => {
-            if (!req.params.userId || !isValidObjectId(req.params.userId)) {
+            if (!isValidObjectId(req.params.userId)) {
                 throw new AppError(httpStatus.BAD_REQUEST, 'Invalid user id');
             }
 
@@ -37,7 +37,7 @@ export function createUserHandler(userService: typeof UserService) {
         },
 
         delete: async (req, res) => {
-            if (!req.params.userId || !isValidObjectId(req.params.userId)) {
+            if (!isValidObjectId(req.params.userId)) {
                 throw new AppError(httpStatus.BAD_REQUEST, 'Invalid user id');
             }
 

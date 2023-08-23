@@ -1,16 +1,13 @@
 import { Router } from 'express';
+import { isAuthenticated } from 'middlewares';
 import { createUserHandler } from './userHandler';
-import { baseUserSchema } from './userModel';
-import { isValid } from '../../middlewares';
 import { UserService } from './userService';
 
 const handler = createUserHandler(UserService);
 export const userRouter = Router();
 
+userRouter.use(isAuthenticated);
+
 userRouter.route('/').get(handler.getAll);
 
-userRouter
-    .route('/:userId')
-    .get(handler.get)
-    .delete(handler.delete)
-    .patch(isValid(baseUserSchema.partial()), handler.update);
+userRouter.route('/:userId').get(handler.get).delete(handler.delete);
