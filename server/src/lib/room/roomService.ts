@@ -5,7 +5,7 @@ import type { UserService } from 'lib/user';
 import { Room, roomSchema } from './roomModel';
 
 export class RoomService {
-    private static readonly MEMBER_LIMIT = 50;
+    private static readonly DATA_LIMIT = 50;
 
     public static getAllRoom() {
         return Room.find({}, 'name').exec();
@@ -16,8 +16,8 @@ export class RoomService {
             .populate({
                 path: 'members',
                 options: {
-                    skip: paginate(pageNumber, RoomService.MEMBER_LIMIT),
-                    limit: RoomService.MEMBER_LIMIT,
+                    skip: paginate(pageNumber, RoomService.DATA_LIMIT),
+                    limit: RoomService.DATA_LIMIT,
                     projection: '-password',
                     sort: 'displayName username',
                 },
@@ -65,7 +65,7 @@ export class RoomService {
         { roomId, userId }: Record<'roomId' | 'userId', Types.ObjectId>,
         userService: typeof UserService,
     ) {
-        const hasUser = await userService.hasUser(userId);
+        const hasUser = await userService.hasUser({ _id: userId });
 
         if (!hasUser) {
             throw new AppError(
@@ -84,7 +84,7 @@ export class RoomService {
             .populate({
                 path: 'members',
                 options: {
-                    limit: RoomService.MEMBER_LIMIT,
+                    limit: RoomService.DATA_LIMIT,
                     projection: '-password',
                     sort: 'displayName username',
                 },
