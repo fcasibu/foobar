@@ -28,15 +28,15 @@ afterAll(async () => {
     await closeTestServer();
 });
 
-afterEach(() => {
-    clearCollections();
+afterEach(async () => {
+    await clearCollections();
 });
 
 describe('user', () => {
     test('GET /users', async () => {
         await User.create(mockUser);
 
-        const result = await request(app).get(`/users`);
+        const result = await request(app).get('/users');
 
         expect(result.statusCode).toBe(httpStatus.SUCCESSFUL);
         expect(result.body.users).toHaveLength(1);
